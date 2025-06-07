@@ -25,7 +25,7 @@ def approx_power_of_2(value):
 
 async def handle_wallet(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if len(context.args) != 1 or not context.args[0].startswith("0x"):
-        await update.message.reply_text("지갑 주소를 정확히 입력해 주세요. 예: /지갑조회 0xabc...")
+        await update.message.reply_text("Please enter a valid wallet address. Example: /wallet 0xabc...")
         return
 
     wallet = context.args[0].lower()
@@ -55,7 +55,7 @@ async def handle_wallet(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     response = requests.post(GRAPH_API, json={"query": query})
     if response.status_code != 200:
-        await update.message.reply_text("데이터를 가져오지 못했습니다.")
+        await update.message.reply_text("Failed to fetch data.")
         return
 
     swaps = response.json().get("data", {}).get("swaps", [])
@@ -84,29 +84,29 @@ async def handle_wallet(update: Update, context: ContextTypes.DEFAULT_TYPE):
         total_volume += amount_usd
         total_slippage += slippage
 
-    message = "[지갑 슬리피지 요약 (최근 15일)]\n\n"
+    message = "[Wallet Slippage Summary (Last 15 days)]\n\n"
 
-    message += "[일자별 토큰 거래량 및 슬리피지]\n"
+    message += "[Daily Token Volume + Slippage]\n"
     for date in sorted(daily_data.keys(), reverse=True)[:5]:
         message += f"{date}\n"
         for token in daily_data[date].values():
-            message += f"  - {token['symbol']}: {format_number(token['volume'])} / 슬리피지: {format_number(token['slippage'])}\n"
+            message += f"  - {token['symbol']}: {format_number(token['volume'])} / Slippage: {format_number(token['slippage'])}\n"
 
-    message += "\n[x2 거래량 적용 기준]\n"
+    message += "\n[x2 Volume Summary]\n"
     for date in sorted(daily_data.keys(), reverse=True)[:5]:
         day_total = sum(token["volume"] for token in daily_data[date].values())
         x2_volume = day_total * 2
         message += f"{date}  {format_number(x2_volume)} ({approx_power_of_2(x2_volume)})\n"
 
-    message += f"\n총 거래량: {format_number(total_volume)} (BSC 기준 x2: {format_number(total_volume * 2)})"
-    message += f"\n총 슬리피지 손실: {format_number(total_slippage)}"
+    message += f"\nTotal Volume: {format_number(total_volume)} (x2 BSC: {format_number(total_volume * 2)})"
+    message += f"\nTotal Slippage: {format_number(total_slippage)}"
 
-    keyboard = [[InlineKeyboardButton(f"/지갑조회 {wallet}", callback_data=f"/지갑조회 {wallet}")]]
+    keyboard = [[InlineKeyboardButton(f"/wallet {wallet}", callback_data=f"/wallet {wallet}")]]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
     await update.message.reply_text(message, reply_markup=reply_markup)
 
 if __name__ == "__main__":
     app = ApplicationBuilder().token(TOKEN).build()
-    app.add_handler(CommandHandler("지갑조회", handle_wallet))
+    app.add_handler(CommandHandler("wallet", handle_wallet))
     app.run_polling()
