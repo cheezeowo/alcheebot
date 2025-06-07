@@ -1,12 +1,11 @@
 import logging
 import requests
-import os
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
+from telegram.ext import Application, CommandHandler, ContextTypes
 from datetime import datetime
 from collections import defaultdict
 
-TOKEN = os.getenv("TOKEN")  # Render 환경변수로 설정됨
+TOKEN = "7289172434:AAEcGKU6hNANwnCoENkDQk_oUsC1Oicr-O0"
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -107,6 +106,6 @@ async def handle_wallet(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(message, reply_markup=reply_markup)
 
 if __name__ == "__main__":
-    app = ApplicationBuilder().token(TOKEN).build()
+    app = Application().token(TOKEN).build()
     app.add_handler(CommandHandler("wallet", handle_wallet))
     app.run_polling()
